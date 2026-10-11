@@ -6,6 +6,7 @@ WORKDIR /app
 # Prevent Python from writing .pyc files and buffer stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app:/app/backend:${PYTHONPATH}"
 
 # Install system dependencies (needed for compilation if any)
 RUN apt-get update && apt-get install -y --no-install-recommends \

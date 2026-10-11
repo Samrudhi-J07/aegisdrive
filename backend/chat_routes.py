@@ -1,8 +1,15 @@
+import os
+import sys
 import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import pandas as pd
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
 from data_loader import load_raw_dataset
 
 router = APIRouter(prefix="/chat", tags=["Chatbot"])
