@@ -1,0 +1,92 @@
+{
+  "severity_model": {
+    "name": "XGBoost Multi-Class Classifier",
+    "target": "accident_severity (minor, major, fatal)",
+    "accuracy": 0.5487,
+    "precision": 0.479,
+    "recall": 0.5487,
+    "f1_score": 0.4681,
+    "confusion_matrix": [
+      [
+        1888,
+        103,
+        214
+      ],
+      [
+        1041,
+        50,
+        107
+      ],
+      [
+        333,
+        7,
+        257
+      ]
+    ],
+    "classes": [
+      "minor",
+      "major",
+      "fatal"
+    ],
+    "feature_importances": [
+      {
+        "feature": "casualties",
+        "importance": 0.33315110206604004
+      },
+      {
+        "feature": "vehicles_involved",
+        "importance": 0.31304019689559937
+      },
+      {
+        "feature": "traffic_signal",
+        "importance": 0.03310495615005493
+      },
+      {
+        "feature": "cause_encoded",
+        "importance": 0.032844722270965576
+      },
+      {
+        "feature": "weather_encoded",
+        "importance": 0.032716840505599976
+      },
+      {
+        "feature": "is_peak_hour",
+        "importance": 0.0323401615023613
+      },
+      {
+        "feature": "is_weekend",
+        "importance": 0.032334957271814346
+      },
+      {
+        "feature": "visibility_num",
+        "importance": 0.03227668255567551
+      },
+      {
+        "feature": "temperature",
+        "importance": 0.03227333351969719
+      },
+      {
+        "feature": "lanes",
+        "importance": 0.03191596269607544
+      },
+      {
+        "feature": "traffic_density_encoded",
+        "importance": 0.03166669234633446
+      },
+      {
+        "feature": "hour",
+        "importance": 0.03140971437096596
+      },
+      {
+        "feature": "road_type_encoded",
+        "importance": 0.03092462383210659
+      }
+    ]
+  },
+  "risk_model": {
+    "name": "Random Forest Risk Score Regressor",
+    "target": "risk_score (0.0 to 1.0)",
+    "r2_score": 0.9204,
+    "rmse": 0.0623
+  }
+}

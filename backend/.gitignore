@@ -1,0 +1,76 @@
+# 1. Copy backend/.gitignore content as backup
+Get-Content backend\.gitignore | Out-File backend\.gitignore.backup
+
+# 2. Create the root .gitignore (this is the important one)
+@"
+# ─────────────────────────────────────────
+# PYTHON
+# ─────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─────────────────────────────────────────
+# SECRETS (NEVER COMMIT)
+# ─────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+
+# ─────────────────────────────────────────
+# NODE / REACT
+# ─────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-error.log*
+
+# ─────────────────────────────────────────
+# DATA
+# ─────────────────────────────────────────
+data/uploads/
+data/processed/
+data/features/
+!data/raw/indian_roads_dataset.csv
+data/raw/*.csv
+!data/raw/indian_roads_dataset.csv
+
+# ─────────────────────────────────────────
+# ML MODELS
+# ─────────────────────────────────────────
+models/*.pkl
+models/*.h5
+models/*.joblib
+
+# ─────────────────────────────────────────
+# NOTEBOOKS
+# ─────────────────────────────────────────
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# ─────────────────────────────────────────
+# IDE / OS
+# ─────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ─────────────────────────────────────────
+# LOGS
+# ─────────────────────────────────────────
+*.log
+logs/
+mlruns/
+reports/*.pdf
+"@ | Out-File -FilePath .gitignore -Encoding UTF8 -Force

@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #0B1120;
+    color: #F1F5F9;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Custom Midnight Blue Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B1120;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3B82F6, #22D3EE);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #60A5FA;
+}
+
+@layer components {
+  .glass-panel-blue {
+    @apply bg-[#131A2B]/90 backdrop-blur-xl border border-[rgba(99,179,237,0.15)] rounded-2xl shadow-card;
+  }
+  .glass-card-blue {
+    @apply bg-gradient-to-br from-[#131A2B] to-[#1A2338] backdrop-blur-lg border border-[rgba(99,179,237,0.15)] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-[rgba(99,179,237,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.15)];
+  }
+  .left-blue-bar {
+    @apply absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-blue-500 to-cyan-400 rounded-l-2xl;
+  }
+  .gradient-text-blue {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400;
+  }
+}
