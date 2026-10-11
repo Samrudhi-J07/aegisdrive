@@ -1,0 +1,15 @@
+# ─────────────────────────────────────────
+# DOCKERIGNORE
+# ─────────────────────────────────────────
+.git/
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.vscode/
+.idea/
+.env
+.env.local
