@@ -21,8 +21,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all project files
 COPY . .
 
+# Set working directory directly to backend so all imports resolve natively
+WORKDIR /app/backend
+
 # Expose default port
 EXPOSE 8000
 
-# Start FastAPI with Uvicorn
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start FastAPI with Uvicorn directly from backend
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
