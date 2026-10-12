@@ -47,9 +47,9 @@ data/raw/*.csv
 # ─────────────────────────────────────────
 # ML MODELS (regenerate or use Git LFS)
 # ─────────────────────────────────────────
-models/*.pkl
 models/*.h5
-models/*.joblib
+!backend/models/*.pkl
+!backend/models/*.json
 
 # ─────────────────────────────────────────
 # NOTEBOOKS
