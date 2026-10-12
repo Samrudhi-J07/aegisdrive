@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Award, BarChart3, CheckSquare } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { API_BASE_URL } from '../config/api';
 
 export default function ModelEvaluation() {
   const [metrics, setMetrics] = useState(null);
@@ -12,7 +13,7 @@ export default function ModelEvaluation() {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/ml/metrics");
+      const res = await fetch(`${API_BASE_URL}/api/ml/metrics`);
       const data = await res.json();
       setMetrics(data);
     } catch (e) {

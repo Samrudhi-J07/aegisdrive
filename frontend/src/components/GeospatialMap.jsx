@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin, Filter, Info } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 const createCustomIcon = (severity) => {
   let color = '#10B981'; // minor = green
@@ -50,7 +51,7 @@ export default function GeospatialMap() {
   const fetchMapData = async () => {
     setLoading(true);
     try {
-      const url = `http://localhost:8000/api/analytics/map?state=${selectedState}&severity=${selectedSeverity}&limit=1200`;
+      const url = `${API_BASE_URL}/api/analytics/map?state=${selectedState}&severity=${selectedSeverity}&limit=1200`;
       const res = await fetch(url);
       const data = await res.json();
       setMapPoints(data.points || []);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, Zap, Database, Server, RefreshCw, CheckCircle2, BarChart2 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function BigDataAnalytics() {
   const [benchmark, setBenchmark] = useState(null);
@@ -12,7 +13,7 @@ export default function BigDataAnalytics() {
   const runBenchmark = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/bigdata/benchmark");
+      const res = await fetch(`${API_BASE_URL}/api/bigdata/benchmark`);
       const data = await res.json();
       setBenchmark(data);
     } catch (e) {

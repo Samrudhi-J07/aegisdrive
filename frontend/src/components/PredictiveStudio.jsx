@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrainCircuit, Sparkles, AlertTriangle, ShieldCheck, Gauge } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function PredictiveStudio() {
   const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ export default function PredictiveStudio() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/predict/severity", {
+      const res = await fetch(`${API_BASE_URL}/api/predict/severity`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

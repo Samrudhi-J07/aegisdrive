@@ -4,6 +4,7 @@ import {
   ChevronRight, ArrowUpRight, BarChart3, HelpCircle, 
   MapPin, ShieldAlert, Cpu, ExternalLink, Minimize2, Maximize2 
 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function AegisChatbot({ setActiveTab }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function AegisChatbot({ setActiveTab }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/message', {
+      const response = await fetch(`${API_BASE_URL}/api/chat/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: query })

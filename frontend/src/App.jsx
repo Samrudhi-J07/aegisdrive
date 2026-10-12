@@ -9,6 +9,7 @@ import BigDataAnalytics from './components/BigDataAnalytics';
 import ModelEvaluation from './components/ModelEvaluation';
 import DatasetUploader from './components/DatasetUploader';
 import AegisChatbot from './components/AegisChatbot';
+import { API_BASE_URL } from './config/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -30,8 +31,8 @@ export default function App() {
   const fetchInitialData = async () => {
     try {
       const [sumRes, chartRes] = await Promise.all([
-        fetch('http://localhost:8000/api/analytics/summary'),
-        fetch('http://localhost:8000/api/analytics/charts')
+        fetch(`${API_BASE_URL}/api/analytics/summary`),
+        fetch(`${API_BASE_URL}/api/analytics/charts`)
       ]);
       const sumData = await sumRes.json();
       const chartData = await chartRes.json();

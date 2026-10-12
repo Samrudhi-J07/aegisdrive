@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sliders, ShieldCheck, AlertTriangle, Zap, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 export default function WhatIfSimulator() {
   const [params, setParams] = useState({
@@ -23,7 +24,7 @@ export default function WhatIfSimulator() {
   const runSimulation = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/simulation/what-if", {
+      const res = await fetch(`${API_BASE_URL}/api/simulation/what-if`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params)

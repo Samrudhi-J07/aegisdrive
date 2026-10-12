@@ -15,6 +15,7 @@ import SampleDatasets from './upload/SampleDatasets';
 import FeaturesGrid from './upload/FeaturesGrid';
 import RecentUploads from './upload/RecentUploads';
 import HelpStrip from './upload/HelpStrip';
+import { API_BASE_URL } from '../config/api';
 
 const CHART_COLORS = ['#3B82F6', '#22D3EE', '#8B5CF6', '#F43F5E', '#10B981', '#F59E0B'];
 
@@ -82,7 +83,7 @@ export default function DatasetUploader() {
     }, 200);
 
     try {
-      const res = await fetch("http://localhost:8000/api/upload/analyze", {
+      const res = await fetch(`${API_BASE_URL}/api/upload/analyze`, {
         method: "POST",
         body: formData
       });
@@ -111,7 +112,7 @@ export default function DatasetUploader() {
     setError(null);
 
     try {
-      const res = await fetch(`http://localhost:8000/api/upload/sample/${sampleName}`);
+      const res = await fetch(`${API_BASE_URL}/api/upload/sample/${sampleName}`);
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.detail || "Failed to load sample dataset");
@@ -131,7 +132,7 @@ export default function DatasetUploader() {
   const downloadPdfReport = async () => {
     setDownloadingPdf(true);
     try {
-      const res = await fetch("http://localhost:8000/api/upload/export-pdf", {
+      const res = await fetch(`${API_BASE_URL}/api/upload/export-pdf`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("Failed to export PDF report");
