@@ -41,6 +41,8 @@ data/processed/
 data/features/
 data/raw/*.csv
 !data/raw/indian_roads_dataset.csv
+*.db
+*.sqlite3
 
 # ─────────────────────────────────────────
 # ML MODELS (regenerate or use Git LFS)

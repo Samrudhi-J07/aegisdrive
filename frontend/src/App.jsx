@@ -9,10 +9,12 @@ import BigDataAnalytics from './components/BigDataAnalytics';
 import ModelEvaluation from './components/ModelEvaluation';
 import DatasetUploader from './components/DatasetUploader';
 import AegisChatbot from './components/AegisChatbot';
+import AuthModal from './components/AuthModal';
 import { API_BASE_URL } from './config/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [summary, setSummary] = useState(null);
   const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0B1120] text-slate-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white">
       {/* Redesigned Sticky Navbar */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onOpenAuth={() => setIsAuthModalOpen(true)} 
+      />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
@@ -91,6 +97,12 @@ export default function App() {
 
       {/* Floating Aegis AI Chatbot */}
       <AegisChatbot setActiveTab={setActiveTab} />
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
 
       {/* Footer */}
       <footer className="border-t border-[rgba(99,179,237,0.12)] bg-[#090E1A] px-6 py-4 text-center text-xs text-slate-400">

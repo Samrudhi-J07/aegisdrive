@@ -18,6 +18,7 @@ from spark_processor import run_pyspark_pipeline
 from ml_pipeline import predict_accident_severity, MODELS_DIR
 from data_uploader import parse_uploaded_file, analyze_dataframe, generate_pdf_report
 from chat_routes import router as chat_router
+from auth_routes import router as auth_router
 
 app = FastAPI(
     title="Road Accident Analytics & Machine Learning Platform",
@@ -37,6 +38,10 @@ app.add_middleware(
 # Include AI Assistant Chatbot routes
 app.include_router(chat_router)
 app.include_router(chat_router, prefix="/api")
+
+# Include Authentication routes
+app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
 
 # Load global dataset cache
 df_cache = load_raw_dataset()
