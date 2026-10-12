@@ -80,17 +80,66 @@ def read_root():
         "docs_url": "/docs"
     }
 
+def filter_dataframe(
+    df: pd.DataFrame,
+    state: Optional[str] = None,
+    severity: Optional[str] = None,
+    weather: Optional[str] = None,
+    road_type: Optional[str] = None,
+    q: Optional[str] = None
+) -> pd.DataFrame:
+    filtered = df
+    if state and state.lower() != "all":
+        filtered = filtered[filtered['state'].str.lower() == state.lower()]
+    if severity and severity.lower() != "all":
+        filtered = filtered[filtered['accident_severity'].str.lower() == severity.lower()]
+    if weather and weather.lower() != "all":
+        filtered = filtered[filtered['weather'].str.lower() == weather.lower()]
+    if road_type and road_type.lower() != "all":
+        filtered = filtered[filtered['road_type'].str.lower() == road_type.lower()]
+    if q and q.strip():
+        query_str = q.strip().lower()
+        mask = (
+            filtered['city'].str.lower().str.contains(query_str, na=False) |
+            filtered['state'].str.lower().str.contains(query_str, na=False) |
+            filtered['cause'].str.lower().str.contains(query_str, na=False) |
+            filtered['road_type'].str.lower().str.contains(query_str, na=False)
+        )
+        filtered = filtered[mask]
+    return filtered
+
 @app.get("/api/analytics/summary")
-def get_analytics_summary():
-    """Returns top executive KPI statistics."""
-    total_accidents = len(df_cache)
-    total_casualties = int(df_cache['casualties'].sum())
-    fatal_accidents = int((df_cache['accident_severity'] == 'fatal').sum())
-    major_accidents = int((df_cache['accident_severity'] == 'major').sum())
-    avg_risk = float(df_cache['risk_score'].mean())
+def get_analytics_summary(
+    state: Optional[str] = None,
+    severity: Optional[str] = None,
+    weather: Optional[str] = None,
+    road_type: Optional[str] = None,
+    q: Optional[str] = None
+):
+    """Returns top executive KPI statistics with dynamic filter parameters."""
+    df_filtered = filter_dataframe(df_cache, state, severity, weather, road_type, q)
     
-    top_state = df_cache.groupby('state')['accident_id'].count().idxmax()
-    top_cause = df_cache.groupby('cause')['accident_id'].count().idxmax()
+    total_accidents = len(df_filtered)
+    if total_accidents == 0:
+        return {
+            "total_accidents": 0,
+            "total_casualties": 0,
+            "fatal_accidents": 0,
+            "major_accidents": 0,
+            "minor_accidents": 0,
+            "avg_risk_score": 0.0,
+            "highest_accident_state": "N/A",
+            "most_common_cause": "N/A",
+            "fatal_rate_pct": 0.0
+        }
+
+    total_casualties = int(df_filtered['casualties'].sum())
+    fatal_accidents = int((df_filtered['accident_severity'] == 'fatal').sum())
+    major_accidents = int((df_filtered['accident_severity'] == 'major').sum())
+    avg_risk = float(df_filtered['risk_score'].mean())
+    
+    top_state = df_filtered.groupby('state')['accident_id'].count().idxmax() if not df_filtered.empty else "N/A"
+    top_cause = df_filtered.groupby('cause')['accident_id'].count().idxmax() if not df_filtered.empty else "N/A"
     
     return {
         "total_accidents": total_accidents,
@@ -101,21 +150,38 @@ def get_analytics_summary():
         "avg_risk_score": round(avg_risk, 3),
         "highest_accident_state": top_state,
         "most_common_cause": top_cause,
-        "fatal_rate_pct": round((fatal_accidents / total_accidents) * 100, 2)
+        "fatal_rate_pct": round((fatal_accidents / max(total_accidents, 1)) * 100, 2)
     }
 
 @app.get("/api/analytics/charts")
-def get_analytics_charts():
-    """Returns structured data for Recharts dashboard visualizers."""
+def get_analytics_charts(
+    state: Optional[str] = None,
+    severity: Optional[str] = None,
+    weather: Optional[str] = None,
+    road_type: Optional[str] = None,
+    q: Optional[str] = None
+):
+    """Returns structured data for Recharts dashboard visualizers with dynamic filter parameters."""
+    df_filtered = filter_dataframe(df_cache, state, severity, weather, road_type, q)
+    
+    if len(df_filtered) == 0:
+        return {
+            "hourly_trend": [],
+            "state_breakdown": [],
+            "weather_severity": [],
+            "cause_distribution": [],
+            "road_type_risk": []
+        }
+
     # 1. Hourly Trend
-    hourly = df_cache.groupby('hour').agg(
+    hourly = df_filtered.groupby('hour').agg(
         accidents=('accident_id', 'count'),
         avg_risk=('risk_score', 'mean')
     ).reset_index().sort_values('hour')
     hourly['avg_risk'] = hourly['avg_risk'].round(3)
     
     # 2. State Breakdown
-    state_df = df_cache.groupby('state').agg(
+    state_df = df_filtered.groupby('state').agg(
         accidents=('accident_id', 'count'),
         casualties=('casualties', 'sum'),
         avg_risk=('risk_score', 'mean')
@@ -123,13 +189,13 @@ def get_analytics_charts():
     state_df['avg_risk'] = state_df['avg_risk'].round(3)
     
     # 3. Weather vs Severity
-    weather_df = df_cache.groupby(['weather', 'accident_severity']).size().unstack(fill_value=0).reset_index()
+    weather_df = df_filtered.groupby(['weather', 'accident_severity']).size().unstack(fill_value=0).reset_index()
     
     # 4. Cause Distribution
-    cause_df = df_cache.groupby('cause').size().reset_index(name='count').sort_values('count', ascending=False)
+    cause_df = df_filtered.groupby('cause').size().reset_index(name='count').sort_values('count', ascending=False)
     
     # 5. Road Type Risk
-    road_df = df_cache.groupby('road_type').agg(
+    road_df = df_filtered.groupby('road_type').agg(
         accidents=('accident_id', 'count'),
         avg_risk=('risk_score', 'mean')
     ).reset_index()

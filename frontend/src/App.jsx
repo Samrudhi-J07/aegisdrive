@@ -27,14 +27,22 @@ export default function App() {
   const [selectedRoadType, setSelectedRoadType] = useState('all');
 
   useEffect(() => {
-    fetchInitialData();
-  }, []);
+    fetchFilteredData();
+  }, [searchQuery, selectedState, selectedSeverity, selectedWeather, selectedRoadType]);
 
-  const fetchInitialData = async () => {
+  const fetchFilteredData = async () => {
     try {
+      const params = new URLSearchParams();
+      if (selectedState && selectedState !== 'all') params.append('state', selectedState);
+      if (selectedSeverity && selectedSeverity !== 'all') params.append('severity', selectedSeverity);
+      if (selectedWeather && selectedWeather !== 'all') params.append('weather', selectedWeather);
+      if (selectedRoadType && selectedRoadType !== 'all') params.append('road_type', selectedRoadType);
+      if (searchQuery && searchQuery.trim()) params.append('q', searchQuery.trim());
+
+      const queryStr = params.toString() ? `?${params.toString()}` : '';
       const [sumRes, chartRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/analytics/summary`),
-        fetch(`${API_BASE_URL}/api/analytics/charts`)
+        fetch(`${API_BASE_URL}/api/analytics/summary${queryStr}`),
+        fetch(`${API_BASE_URL}/api/analytics/charts${queryStr}`)
       ]);
       const sumData = await sumRes.json();
       const chartData = await chartRes.json();
