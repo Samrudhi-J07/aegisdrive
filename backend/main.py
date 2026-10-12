@@ -143,6 +143,155 @@ def get_analytics_charts():
         "road_type_risk": road_df.to_dict(orient="records")
     }
 
+@app.get("/api/analytics/export-pdf")
+def export_dashboard_pdf():
+    """Generates an executive PDF report of the main road accident dashboard."""
+    import io
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+    story = []
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'DocTitle', parent=styles['Title'],
+        fontName='Helvetica-Bold', fontSize=22, textColor=colors.HexColor('#0f172a'), alignment=0, spaceAfter=8
+    )
+    subtitle_style = ParagraphStyle(
+        'DocSubtitle', parent=styles['Normal'],
+        fontName='Helvetica', fontSize=10, textColor=colors.HexColor('#64748b'), spaceAfter=15
+    )
+    heading_style = ParagraphStyle(
+        'Heading2', parent=styles['Heading2'],
+        fontName='Helvetica-Bold', fontSize=13, textColor=colors.HexColor('#1e293b'), spaceBefore=12, spaceAfter=6
+    )
+
+    story.append(Paragraph("AegisDrive AI — Executive Road Safety Analytics Report", title_style))
+    story.append(Paragraph(f"Dataset Scope: <b>20,000+ Indian Road Accidents</b> | Generated: <b>Real-Time</b>", subtitle_style))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#06b6d4'), spaceAfter=15))
+
+    # Summary KPI Table
+    total_acc = len(df_cache)
+    total_cas = int(df_cache['casualties'].sum())
+    fatal_acc = int((df_cache['accident_severity'] == 'fatal').sum())
+    avg_risk = float(df_cache['risk_score'].mean())
+    top_state = df_cache.groupby('state')['accident_id'].count().idxmax()
+    top_cause = df_cache.groupby('cause')['accident_id'].count().idxmax()
+
+    kpi_data = [
+        ["Total Accidents", "Total Casualties", "Fatal Accidents", "Avg Risk Score"],
+        [f"{total_acc:,}", f"{total_cas:,}", f"{fatal_acc:,}", f"{avg_risk:.3f} / 1.0"]
+    ]
+    t_kpi = Table(kpi_data, colWidths=[130, 130, 130, 130])
+    t_kpi.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0f172a')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 10),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#f8fafc')),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#cbd5e1')),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e2e8f0')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6)
+    ]))
+    story.append(t_kpi)
+    story.append(Spacer(1, 15))
+
+    # Top States Table
+    story.append(Paragraph("Top 5 High-Risk States by Accident Volume", heading_style))
+    state_top = df_cache.groupby('state').agg(
+        accidents=('accident_id', 'count'),
+        fatalities=('accident_severity', lambda s: (s == 'fatal').sum()),
+        avg_risk=('risk_score', 'mean')
+    ).reset_index().sort_values('accidents', ascending=False).head(5)
+
+    state_data = [["State", "Accidents", "Fatal Crashes", "Avg Risk Score"]]
+    for _, row in state_top.iterrows():
+        state_data.append([row['state'], f"{row['accidents']:,}", f"{row['fatalities']:,}", f"{row['avg_risk']:.3f}"])
+
+    t_state = Table(state_data, colWidths=[160, 120, 120, 120])
+    t_state.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1e293b')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f1f5f9')]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 5)
+    ]))
+    story.append(t_state)
+    story.append(Spacer(1, 15))
+
+    # Key Contributing Factors Table
+    story.append(Paragraph("Top Accident Contributing Causes", heading_style))
+    cause_top = df_cache.groupby('cause').size().reset_index(name='count').sort_values('count', ascending=False).head(5)
+    cause_data = [["Accident Cause / Factor", "Incident Count", "% of Total"]]
+    for _, row in cause_top.iterrows():
+        pct = (row['count'] / total_acc) * 100
+        cause_data.append([str(row['cause']).capitalize(), f"{row['count']:,}", f"{pct:.1f}%"])
+
+    t_cause = Table(cause_data, colWidths=[240, 140, 140])
+    t_cause.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0891b2')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f1f5f9')]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 5)
+    ]))
+    story.append(t_cause)
+
+    doc.build(story)
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+
+    headers = {'Content-Disposition': 'attachment; filename="AegisDrive_Executive_Report.pdf"'}
+    return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+@app.get("/api/analytics/export-excel")
+def export_dashboard_excel():
+    """Exports key summary metrics, hourly trends, and state summaries to an Excel workbook."""
+    import io
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        # Sheet 1: Executive KPI
+        kpi_df = pd.DataFrame([{
+            "Total Accidents": len(df_cache),
+            "Total Casualties": int(df_cache['casualties'].sum()),
+            "Fatal Accidents": int((df_cache['accident_severity'] == 'fatal').sum()),
+            "Average Risk Score": round(float(df_cache['risk_score'].mean()), 3),
+            "Top Accident State": df_cache.groupby('state')['accident_id'].count().idxmax(),
+            "Most Common Cause": df_cache.groupby('cause')['accident_id'].count().idxmax()
+        }])
+        kpi_df.to_excel(writer, sheet_name="Executive Summary", index=False)
+
+        # Sheet 2: State Breakdown
+        state_df = df_cache.groupby('state').agg(
+            Accidents=('accident_id', 'count'),
+            Casualties=('casualties', 'sum'),
+            Fatal_Accidents=('accident_severity', lambda s: (s == 'fatal').sum()),
+            Avg_Risk_Score=('risk_score', 'mean')
+        ).reset_index().sort_values('Accidents', ascending=False)
+        state_df.to_excel(writer, sheet_name="State Breakdown", index=False)
+
+        # Sheet 3: Causes Breakdown
+        cause_df = df_cache.groupby('cause').size().reset_index(name='Incident Count').sort_values('Incident Count', ascending=False)
+        cause_df.to_excel(writer, sheet_name="Accident Causes", index=False)
+
+    output.seek(0)
+    headers = {'Content-Disposition': 'attachment; filename="AegisDrive_Analytics_Data.xlsx"'}
+    return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers=headers)
+
 @app.get("/api/analytics/map")
 def get_map_data(
     state: Optional[str] = None,

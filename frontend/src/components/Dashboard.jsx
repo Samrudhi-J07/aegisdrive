@@ -11,10 +11,54 @@ import {
 import KPICard from './KPICard';
 import SectionHeader from './SectionHeader';
 import ChartCard from './ChartCard';
+import { API_BASE_URL } from '../config/api';
 
 const PIE_COLORS = ['#3B82F6', '#22D3EE', '#8B5CF6', '#F43F5E', '#10B981', '#F59E0B'];
 
 export default function Dashboard({ summary, charts, loading }) {
+  const [exportingPdf, setExportingPdf] = React.useState(false);
+  const [exportingExcel, setExportingExcel] = React.useState(false);
+
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/analytics/export-pdf`);
+      if (!res.ok) throw new Error("Failed to export PDF report");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AegisDrive_Executive_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (e) {
+      alert("Error exporting PDF: " + e.message);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    setExportingExcel(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/analytics/export-excel`);
+      if (!res.ok) throw new Error("Failed to export Excel report");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AegisDrive_Analytics_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (e) {
+      alert("Error exporting Excel: " + e.message);
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   if (loading || !summary || !charts) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
@@ -33,10 +77,24 @@ export default function Dashboard({ summary, charts, loading }) {
           title="Key Performance Indicators" 
           subtitle="Real-time macro accident analytics and risk indices"
           actions={
-            <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-bold text-xs shadow-glow flex items-center gap-2 transition-all">
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Report</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleExportExcel}
+                disabled={exportingExcel}
+                className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 hover:text-white font-medium text-xs flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{exportingExcel ? 'Exporting...' : 'Excel (.xlsx)'}</span>
+              </button>
+              <button 
+                onClick={handleExportPdf}
+                disabled={exportingPdf}
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-semibold text-xs shadow-glow flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{exportingPdf ? 'Generating...' : 'PDF Report'}</span>
+              </button>
+            </div>
           }
         />
 
