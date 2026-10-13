@@ -317,6 +317,20 @@ def export_dashboard_pdf():
     ]))
     story.append(t_cause)
 
+    # Append Workflow & Architecture Diagram page if available
+    img_candidates = [
+        os.path.join(os.path.dirname(__file__), "assets", "workflow_diagram.jpg"),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "workflow_diagram.jpg"),
+        "workflow_diagram.jpg"
+    ]
+    wf_img = next((p for p in img_candidates if os.path.exists(p)), None)
+    if wf_img:
+        from reportlab.platypus import Image as RLImage, PageBreak
+        story.append(PageBreak())
+        story.append(Paragraph("AegisDrive End-to-End System Architecture & Workflow", heading_style))
+        story.append(Spacer(1, 10))
+        story.append(RLImage(wf_img, width=540, height=493))
+
     doc.build(story)
     pdf_bytes = buffer.getvalue()
     buffer.close()
