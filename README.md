@@ -103,3 +103,4 @@ chmod +x run_all.sh
 | `GET /api/ml/metrics` | `GET` | Confusion matrix, F1-scores, and feature importances. |
 | `POST /api/predict/severity` | `POST` | Infers accident severity probabilities & risk score. |
 | `POST /api/simulation/what-if` | `POST` | Dynamic scenario risk score simulator. |
+ 
